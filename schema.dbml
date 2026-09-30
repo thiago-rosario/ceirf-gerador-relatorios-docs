@@ -1,0 +1,282 @@
+Table users [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	name varchar(100) [ not null ]
+	email varchar(150) [ not null, unique ]
+	password varchar(255) [ not null ]
+	is_active boolean [ not null, default: true ]
+	created_at timestamp [ not null ]
+	updated_at timestamp
+}
+
+Table roles [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	code varchar(30) [ not null, unique ]
+	name varchar(100) [ not null ]
+}
+
+Table user_roles [headercolor: #175e7a] {
+	user_id bigint [ pk, not null ]
+	role_id smallint [ pk, not null ]
+}
+
+Table coordinations [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	code varchar(20) [ not null, unique ]
+	name varchar(100) [ not null ]
+	description text
+	is_active boolean [ not null, default: true ]
+	created_at timestamp [ not null ]
+	updated_at timestamp
+}
+
+Table report_types [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	coordination_id smallint [ not null ]
+	code varchar(50) [ not null ]
+	name varchar(150) [ not null ]
+
+	indexes {
+		(coordination_id, code) [ name: 'uq_report_types_coord_code', unique ]
+	}
+}
+
+Table municipalities [headercolor: #175e7a] {
+	id integer [ pk, increment, not null ]
+	identity_territory_id smallint [ not null ]
+	name varchar(100) [ not null ]
+	state_code varchar(2) [ not null, default: 'BA' ]
+	is_active boolean [ not null, default: true ]
+
+	indexes {
+		(name, state_code) [ name: 'uq_municipalities_name_state', unique ]
+	}
+}
+
+Table forces [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	code varchar(20) [ not null, unique ]
+	name varchar(100) [ not null ]
+	is_active boolean [ not null, default: true ]
+	created_at timestamp [ not null ]
+	updated_at timestamp
+}
+
+Table identity_territories [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	name varchar(150) [ not null, unique ]
+	is_active boolean [ not null, default: true ]
+}
+
+Table sizes [headercolor: #175e7a] {
+	id smallint [ pk, increment, not null ]
+	name varchar(20) [ not null, unique ]
+}
+
+Table report_series [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	created_by bigint [ not null ]
+	created_at timestamp [ not null ]
+	updated_at timestamp
+}
+
+Table reports [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	report_series_id bigint [ not null ]
+	report_type_id smallint [ not null ]
+	previous_report_id bigint
+	revision_number smallint [ not null, default: 0 ]
+	municipality_id integer
+	force_id smallint
+	size_id smallint
+	typology varchar(100)
+	sei_number varchar(80)
+	inspection_date date
+	present_collaborators varchar(1000)
+	objective text
+	land_address varchar(255)
+	land_zip_code varchar(10)
+	google_maps_url varchar(500)
+	distance_from_ssp_km decimal(10,2)
+	descriptive_memorial text
+	land_area_m2 decimal(12,2)
+	land_perimeter_m decimal(12,2)
+	descriptive_memorial_notes text
+	topography varchar(255)
+	soil_type varchar(255)
+	drainage varchar(255)
+	existing_vegetation varchar(255)
+	infrastructure_water_network smallint
+	infrastructure_high_voltage_network smallint
+	infrastructure_low_voltage_network smallint
+	infrastructure_sewage_network smallint
+	infrastructure_telephony smallint
+	infrastructure_public_lighting smallint
+	infrastructure_internet smallint
+	infrastructure_waste_collection smallint
+	infrastructure_paving smallint
+	infrastructure_existing_buildings smallint
+	existing_structures_condition text
+	conclusion text
+	checklist_sei_construction_request smallint
+	checklist_sei_land_and_typology_identification smallint
+	checklist_state_owned_land smallint
+	checklist_simov_legalized smallint
+	checklist_compatible_dimensions smallint
+	checklist_slope_or_level_risk smallint
+	checklist_stormwater_drainage smallint
+	checklist_flood_history smallint
+	checklist_electricity_supply smallint
+	checklist_water_supply smallint
+	checklist_sewage_supply smallint
+	checklist_paving_and_sidewalk smallint
+	checklist_regular_waste_collection smallint
+	checklist_demolition_required smallint
+	checklist_easy_public_access smallint
+	checklist_domain_strip_or_non_buildable_area smallint
+	checklist_technical_feasibility_report smallint
+	checklist_report_attached_to_sei smallint
+	checklist_works_dashboard_updated smallint
+	checklist_environmental_protection_area smallint
+	created_by bigint [ not null ]
+	created_at timestamp [ not null ]
+	updated_at timestamp
+
+	indexes {
+		(report_series_id, revision_number) [ name: 'uq_reports_series_revision', unique ]
+		(created_at) [ name: 'idx_reports_created_at' ]
+		(updated_at) [ name: 'idx_reports_updated_at' ]
+		(report_type_id) [ name: 'idx_reports_report_type' ]
+		(municipality_id) [ name: 'idx_reports_municipality' ]
+	}
+}
+
+Table report_images [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	report_id bigint [ not null ]
+	uploaded_by bigint [ not null ]
+	type varchar(50) [ not null ]
+	original_name varchar(255) [ not null ]
+	storage_path varchar(500) [ not null ]
+	mime_type varchar(100) [ not null ]
+	size_bytes bigint [ not null ]
+	file_hash varchar(64) [ not null ]
+	caption varchar(500)
+	position smallint
+	created_at timestamp [ not null ]
+	updated_at timestamp
+
+	indexes {
+		(report_id, file_hash) [ name: 'uq_report_images_report_hash', unique ]
+		(report_id) [ name: 'idx_report_images_report' ]
+	}
+}
+
+Table report_reviews [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	report_id bigint [ not null ]
+	reviewer_id bigint [ not null ]
+	status varchar(30) [ not null ]
+	comment text
+	reviewed_at timestamp
+	created_at timestamp [ not null ]
+	updated_at timestamp
+
+	indexes {
+		(report_id) [ name: 'idx_report_reviews_report' ]
+		(reviewer_id) [ name: 'idx_report_reviews_reviewer' ]
+		(report_id, created_at) [ name: 'idx_report_reviews_report_created' ]
+	}
+}
+
+Table report_attachments [headercolor: #175e7a] {
+	id bigint [ pk, increment, not null ]
+	report_id bigint [ not null ]
+	uploaded_by bigint [ not null ]
+	type varchar(50) [ not null ]
+	original_name varchar(255) [ not null ]
+	storage_path varchar(500) [ not null ]
+	mime_type varchar(100) [ not null ]
+	size_bytes bigint [ not null ]
+	file_hash varchar(64) [ not null ]
+	description varchar(500)
+	position smallint
+	created_at timestamp [ not null ]
+	updated_at timestamp
+
+	indexes {
+		(report_id, file_hash) [ name: 'uq_report_attachments_report_hash', unique ]
+		(report_id) [ name: 'idx_report_attachments_report' ]
+	}
+}
+
+Ref fk_users_user_roles {
+	users.id < user_roles.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_roles_user_roles {
+	roles.id < user_roles.role_id [ delete: no action, update: no action ]
+}
+
+Ref fk_coordinations_report_types {
+	coordinations.id < report_types.coordination_id [ delete: no action, update: no action ]
+}
+
+Ref fk_identity_territories_municipalities {
+	identity_territories.id < municipalities.identity_territory_id [ delete: no action, update: no action ]
+}
+
+Ref fk_users_report_series {
+	users.id < report_series.created_by [ delete: no action, update: no action ]
+}
+
+Ref fk_report_series_reports {
+	report_series.id < reports.report_series_id [ delete: no action, update: no action ]
+}
+
+Ref fk_report_types_reports {
+	report_types.id < reports.report_type_id [ delete: no action, update: no action ]
+}
+
+Ref fk_users_reports {
+	users.id < reports.created_by [ delete: no action, update: no action ]
+}
+
+Ref fk_reports_previous_report {
+	reports.id < reports.previous_report_id [ delete: no action, update: no action ]
+}
+
+Ref fk_reports_report_images {
+	reports.id < report_images.report_id [ delete: no action, update: no action ]
+}
+
+Ref fk_users_report_images {
+	users.id < report_images.uploaded_by [ delete: no action, update: no action ]
+}
+
+Ref fk_municipalities_reports {
+	municipalities.id < reports.municipality_id [ delete: no action, update: no action ]
+}
+
+Ref fk_forces_reports {
+	forces.id < reports.force_id [ delete: no action, update: no action ]
+}
+
+Ref fk_sizes_reports {
+	sizes.id < reports.size_id [ delete: no action, update: no action ]
+}
+
+Ref fk_reports_report_attachments {
+	reports.id < report_attachments.report_id [ delete: no action, update: no action ]
+}
+
+Ref fk_users_report_attachments {
+	users.id < report_attachments.uploaded_by [ delete: no action, update: no action ]
+}
+
+Ref fk_reports_report_reviews {
+	reports.id < report_reviews.report_id [ delete: no action, update: no action ]
+}
+
+Ref fk_users_report_reviews {
+	users.id < report_reviews.reviewer_id [ delete: no action, update: no action ]
+}
